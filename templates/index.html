@@ -2,13 +2,33 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>米斯特 門市考核查詢系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>米斯特門市考核查詢系統</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 </head>
-<body style="font-family:sans-serif; text-align:center; margin-top:50px;">
-    <h1>米斯特 門市考核查詢系統</h1>
-    <form method="POST">
-        <input type="text" name="keyword" placeholder="輸入關鍵字查詢" style="padding:8px; width:250px;">
-        <button type="submit" style="padding:8px 16px;">查詢</button>
+<body class="bg-light">
+
+<div class="container py-5">
+    <h1 class="text-center mb-4">米斯特門市考核查詢系統</h1>
+
+    <!-- 查詢表單 -->
+    <form method="POST" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="keyword" class="form-control" placeholder="輸入關鍵字查詢" value="{{ keyword }}">
+            <button class="btn btn-primary">查詢</button>
+        </div>
     </form>
+
+    <!-- 查詢結果 -->
+    {% if results_html %}
+        <h3>查詢結果：</h3>
+        <div class="table-responsive">
+            {{ results_html | safe }}
+        </div>
+    {% elif keyword %}
+        <div class="alert alert-warning">沒有找到符合「{{ keyword }}」的資料</div>
+    {% endif %}
+</div>
+
 </body>
 </html>
