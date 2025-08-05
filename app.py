@@ -4,7 +4,7 @@ import pandas as pd
 app = Flask(__name__)
 
 # 直接用 CSV 連結
-CSV_URL = "https://docs.google.com/spreadsheets/d/192JCsp3kl4Hr-87546f_d4VbZt9kEdJP/export?format=csv&gid=1006342564"
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/192JCsp3kl4Hr-87546f_d4VbZt9kEdJP/export?format=csv&gid=1006342564"
 
 @app.route('/', methods=["GET", "POST"])
 def home():
