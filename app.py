@@ -3,7 +3,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# 直接用 CSV 連結
+# Google Sheet 轉 CSV 連結
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/192JCsp3kl4Hr-87546f_d4VbZt9kEdJP/export?format=csv&gid=1006342564"
 
 @app.route('/', methods=["GET", "POST"])
@@ -11,14 +11,14 @@ def home():
     keyword = ""
     results_html = ""
 
+    # 每次請求都讀取 Google Sheet
+    df = pd.read_csv(SHEET_CSV_URL)
+
     if request.method == "POST":
         keyword = request.form.get("keyword", "").strip()
 
-        # 讀取 Google Sheet (CSV)
-        df = pd.read_csv(CSV_URL)
-
-        # 關鍵字搜尋
         if keyword:
+            # 關鍵字模糊搜尋（忽略大小寫）
             mask = df.apply(lambda row: row.astype(str).str.contains(keyword, case=False).any(), axis=1)
             results = df[mask]
 
