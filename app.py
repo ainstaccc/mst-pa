@@ -1,105 +1,39 @@
 import os
 import json
-from flask import Flask, request, render_template_string
+from flask import Flask, render_template
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
-# --------------------------
-# Flask App 初始化
-# --------------------------
 app = Flask(__name__)
 
 # --------------------------
-# Google Sheets 授權
+# 讀取 Render 環境變數中的金鑰
 # --------------------------
-# 讀取 Render 環境變數
-SPREADSHEET_ID = os.environ.get("GOOGLE_SHEET_ID")  # 例如: 1ZNjTzRepFjwikGpTt8QpnyHmarW6iCKkJzaCyXHApWw
-GOOGLE_CREDENTIALS = os.environ.get("GOOGLE_CREDENTIALS")  # JSON字串
+google_creds_json = os.environ.get("GCP_CREDENTIALS")
+creds_dict = json.loads(google_creds_json)
 
-# 權限範圍
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive",
-]
-
-# 解析 JSON 並授權
-creds_dict = json.loads(GOOGLE_CREDENTIALS)
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+gc = gspread.authorize(creds)
 
 # --------------------------
-# 首頁：簡單查詢表單
+# Flask 首頁
 # --------------------------
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    query_result = []
-    if request.method == "POST":
-        manager_name = request.form.get("manager_name")
-        worksheet = client.open_by_key(SPREADSHEET_ID).worksheet("門店 考核總表")
-        data = worksheet.get_all_values()
-
-        # 取得表頭與資料列
-        header = data[0]
-        rows = data[1:]
-
-        # 篩選區主管名稱 (假設在 B 欄)
-        for row in rows:
-            if len(row) > 1 and manager_name in row[1]:
-                query_result.append(row)
-
-        return render_template_string(HTML_TEMPLATE, result=query_result, header=header)
-
-    return render_template_string(HTML_TEMPLATE, result=None, header=None)
+    return render_template("index.html")
 
 # --------------------------
-# HTML 模板
+# 讀取 Google Sheet 資料
 # --------------------------
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>門市考核查詢平台</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <h2>門市考核查詢平台</h2>
-    <form method="POST">
-        區主管姓名: <input type="text" name="manager_name" required>
-        <button type="submit">查詢</button>
-    </form>
-
-    {% if result %}
-        <h3>查詢結果 (共 {{ result|length }} 筆)</h3>
-        <table>
-            <tr>
-                {% for col in header %}
-                    <th>{{ col }}</th>
-                {% endfor %}
-            </tr>
-            {% for row in result %}
-                <tr>
-                    {% for col in row %}
-                        <td>{{ col }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-    {% elif result is not none %}
-        <p>查無資料</p>
-    {% endif %}
-</body>
-</html>
-"""
+@app.route("/data")
+def get_data():
+    sheet = gc.open_by_key("你的GoogleSheetID").sheet1
+    records = sheet.get_all_records()
+    return {"data": records}
 
 # --------------------------
-# Render 用入口
+# Render 啟動用
 # --------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=5000)
