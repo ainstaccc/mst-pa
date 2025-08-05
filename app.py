@@ -3,9 +3,8 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# 你的 Google Sheet 轉成 CSV 的公開網址
-SHEET_ID = "192JCsp3kl4Hr-87546f_d4VbZt9kEdJP"
-CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
+# 直接用 CSV 連結
+CSV_URL = "https://docs.google.com/spreadsheets/d/192JCsp3kl4Hr-87546f_d4VbZt9kEdJP/export?format=csv&gid=1006342564"
 
 @app.route('/', methods=["GET", "POST"])
 def home():
@@ -15,10 +14,10 @@ def home():
     if request.method == "POST":
         keyword = request.form.get("keyword", "").strip()
 
-        # 讀取 Google Sheet 資料
+        # 讀取 Google Sheet (CSV)
         df = pd.read_csv(CSV_URL)
 
-        # 關鍵字搜尋（全表格模糊比對）
+        # 關鍵字搜尋
         if keyword:
             mask = df.apply(lambda row: row.astype(str).str.contains(keyword, case=False).any(), axis=1)
             results = df[mask]
