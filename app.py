@@ -1,46 +1,44 @@
 import os
-from flask import Flask, render_template_string
+import json
+from flask import Flask
 import gspread
 from google.oauth2.service_account import Credentials
 
-# --------------------------
-# 1️⃣ 建立 Flask App
-# --------------------------
 app = Flask(__name__)
 
 # --------------------------
-# 2️⃣ Google Sheets 驗證
+# 1️⃣ Google Sheets 驗證
 # --------------------------
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-SERVICE_ACCOUNT_FILE = "service_account.json"  # 金鑰檔案放在專案根目錄
-
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+# 從環境變數讀取 JSON 金鑰
+service_account_info = json.loads(os.environ["GOOGLE_SHEETS_KEY"])
+creds = Credentials.from_service_account_info(
+    service_account_info,
+    scopes=[
+        "https://www.googleapis.com/auth/spreadsheets.readonly",
+        "https://www.googleapis.com/auth/drive.readonly",
+    ],
+)
 gc = gspread.authorize(creds)
 
-# 替換成你的 Google Sheet ID
+# Google Sheet ID
 SHEET_ID = "1ZNjTzRepFjwikGpTt8QpnyHmarW6iCKkJzaCyXHApWw"
-WORKSHEET_NAME = "人效分析"  # 先測試單一分頁
 
-# --------------------------
-# 3️⃣ 首頁：測試讀取 Google Sheet
-# --------------------------
-@app.route('/')
+@app.route("/")
 def index():
     try:
+        # 讀取第一個分頁
         sh = gc.open_by_key(SHEET_ID)
-        ws = sh.worksheet(WORKSHEET_NAME)
-        data = ws.get_all_values()  # 讀取整個表格
-
-        # 簡單顯示成 HTML 表格
-        table_html = "<table border='1'>" + "".join(
-            f"<tr>{''.join(f'<td>{cell}</td>' for cell in row)}</tr>" for row in data
-        ) + "</table>"
-        return render_template_string("<h2>Google Sheet 資料測試</h2>" + table_html)
+        ws = sh.sheet1
+        data = ws.get_all_values()  # 取得整個表格資料
+        
+        # 只顯示前 5 筆，避免太長
+        preview = "<br>".join([str(row) for row in data[:5]])
+        return f"<h3>✅ 成功讀取 Google Sheet！</h3><pre>{preview}</pre>"
     except Exception as e:
-        return f"<h3>讀取 Google Sheet 失敗</h3><pre>{str(e)}</pre>"
+        return f"<h3>❌ 讀取失敗</h3><pre>{str(e)}</pre>"
 
 # --------------------------
-# 4️⃣ Render 啟動
+# 2️⃣ Render 啟動
 # --------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
