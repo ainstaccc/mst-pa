@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>查詢結果 - 米斯特門市考核系統</title>
+</head>
+<body style="font-family:sans-serif; text-align:center; margin-top:30px;">
+    <h2>查詢結果：{{ keyword }}</h2>
+    <div style="width:80%; margin:20px auto;">
+        {% for table in tables %}
+            {{ table|safe }}
+        {% endfor %}
+    </div>
+    <a href="/">回首頁</a>
+</body>
+</html>
