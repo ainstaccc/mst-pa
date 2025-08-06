@@ -5,7 +5,7 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 # Excel 檔案路徑
-EXCEL_FILE = os.path.join("data", "2025.06_MST-PA.xlsx")
+EXCEL_FILE = os.path.join("data", "2025.07 門市-考核總表_查詢平台.xlsx")
 
 # 目標分頁
 TARGET_SHEETS = ["等級分佈", "門店 考核總表", "人效分析", "店主管 考核明細", "店員 考核明細"]
