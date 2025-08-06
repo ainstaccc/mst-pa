@@ -1,31 +1,28 @@
-import os, json
-from flask import Flask
-import gspread
-from google.oauth2.service_account import Credentials
+import os
+import pandas as pd
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
+# Excel 檔案路徑
+EXCEL_FILE = os.path.join("data", "2025.06_MST-PA.xlsx")
+
+# 目標分頁
+TARGET_SHEETS = ["等級分佈", "門店 考核總表", "人效分析", "店主管 考核明細", "店員 考核明細"]
+
 @app.route("/")
 def index():
+    results = {}
     try:
-        creds = Credentials.from_service_account_info(
-            json.loads(os.environ["GOOGLE_CREDENTIALS"]),
-            scopes=[
-                "https://www.googleapis.com/auth/spreadsheets.readonly",
-                "https://www.googleapis.com/auth/drive.readonly",
-            ],
-        )
-        gc = gspread.authorize(creds)
-
-        sh = gc.open_by_key("1ZNjTzRepFjwikGpTt8QpnyHmarW6iCKkJzaCyXHApWw")
-        ws = sh.worksheet("等級分佈")
-        data = ws.get_all_values()
-        preview = "<br>".join([str(row) for row in data[:5]])
-
-        return f"<h2>✅ 成功讀取 Google Sheet</h2><pre>{preview}</pre>"
+        # 逐一讀取各分頁
+        for sheet in TARGET_SHEETS:
+            df = pd.read_excel(EXCEL_FILE, sheet_name=sheet)
+            results[sheet] = df.head(10).to_html(classes="table table-striped", index=False)
+        
+        return render_template("index.html", results=results, sheets=TARGET_SHEETS)
 
     except Exception as e:
-        return f"<h3>❌ 讀取失敗</h3><pre>{str(e)}</pre>"
+        return f"<h1>❌ 讀取失敗</h1><p>{str(e)}</p>"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
