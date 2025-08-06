@@ -1,34 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>米斯特門市考核查詢系統</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <title>MST-PA 門市考核查詢</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="bg-light">
-
-<div class="container py-5">
-    <h1 class="text-center mb-4">米斯特門市考核查詢系統</h1>
-
-    <!-- 查詢表單 -->
-    <form method="POST" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="輸入關鍵字查詢" value="{{ keyword }}">
-            <button class="btn btn-primary">查詢</button>
-        </div>
-    </form>
-
-    <!-- 查詢結果 -->
-    {% if results_html %}
-        <h3>查詢結果：</h3>
-        <div class="table-responsive">
-            {{ results_html | safe }}
-        </div>
-    {% elif keyword %}
-        <div class="alert alert-warning">沒有找到符合「{{ keyword }}」的資料</div>
-    {% endif %}
-</div>
-
+<body class="p-4">
+    <h1>MST-PA 門市考核查詢</h1>
+    <hr>
+    {% for sheet in sheets %}
+        <h2>{{ sheet }}</h2>
+        {{ results[sheet] | safe }}
+        <hr>
+    {% endfor %}
 </body>
 </html>
